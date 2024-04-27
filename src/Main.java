@@ -1,4 +1,6 @@
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Main {
     static String conversionFrom10_Java(int number, int base){
@@ -9,7 +11,7 @@ public class Main {
         return Integer.parseInt(number, base);
     }
 
-    static String conversionFrom10_castom(int number, int base){
+    static String conversionFrom10_own(int number, int base){
         String resNumber = "";
         String curNumber = "";
         while (number > 0) {
@@ -32,7 +34,7 @@ public class Main {
         return resNumber;
     }
 
-    static int conversionTo10_castom(String number, int base) {
+    static int conversionTo10_own(String number, int base) {
         int resNumber = 0;
         int curNumber = 0;
         int n = 0;
@@ -71,6 +73,34 @@ public class Main {
         return resNumber;
     }
 
+    static String conversionFrom10_streamAPI(int number, int base){
+        if (base == 2){
+            return IntStream.rangeClosed(0, 10)
+                    .mapToObj(i -> (number & (1 << (10 - i))) >> (10 - i))
+                    .map(String::valueOf)
+                    .dropWhile(i -> i.equals("0"))
+                    .collect(Collectors.joining(""));
+        } else if (base == 16) {
+            return String.format("%X", number).chars()
+                    .mapToObj(c -> Character.toString((char) c))
+                    .collect(Collectors.joining(""));
+        }
+        return "";
+    }
+    static int conversionTo10_streamAPI(String number, int base){
+        if(base == 2){
+            String reversedBinary = new StringBuilder(number).reverse().toString();
+            return IntStream.range(0, reversedBinary.length())
+                    .map(i -> Character.getNumericValue(reversedBinary.charAt(i)) * (1 << i))
+                    .sum();
+        } else if (base == 16) {
+            return number.chars()
+                    .mapToObj(c -> Character.isDigit(c) ? c - '0' : Character.toUpperCase(c) - 'A' + 10)
+                    .reduce(0, (w, digit) -> w * 16 + digit);
+        }
+        return 0;
+    }
+
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
         int number = 0;
@@ -95,17 +125,23 @@ public class Main {
             convFrom10_result = conversionFrom10_Java(number, base);
             convTo10_result = conversionTo10_Java(convFrom10_result, base);
 
-            System.out.println("Built-in methods.");
+            System.out.println("Built-in methods:");
             System.out.println("10 to " + base + ": " + convFrom10_result);
             System.out.println(base + " to 10" + ": " + convTo10_result);
 
-            convFrom10_result = conversionFrom10_castom(number, base);
-            convTo10_result = conversionTo10_castom(convFrom10_result, base);
+            convFrom10_result = conversionFrom10_own(number, base);
+            convTo10_result = conversionTo10_own(convFrom10_result, base);
 
-            System.out.println("\nOwn methods.");
+            System.out.println("\nOwn methods:");
             System.out.println("10 to " + base + ": " + convFrom10_result);
             System.out.println(base + " to 10" + ": " + convTo10_result);
 
+            convFrom10_result = conversionFrom10_streamAPI(number, base);
+            convTo10_result = conversionTo10_streamAPI(convFrom10_result, base);
+
+            System.out.println("\nStream API methods:");
+            System.out.println("10 to " + base + ": " + convFrom10_result);
+            System.out.println(base + " to 10" + ": " + convTo10_result);
 
             base = 0;
         }
